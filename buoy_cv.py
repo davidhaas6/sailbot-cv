@@ -12,6 +12,12 @@ def imshow_split(img1, img2, title, height=False):
     title -- The title for the window pane
     ratio -- The aspect ratio to display the images at (default 1)
     """
+    if len(img1.shape) != len(img2.shape):
+        if len(img1.shape) < len(img2.shape):
+            img1 = cv2.cvtColor(img1, cv2.COLOR_GRAY2BGR)
+        else:
+            img2 = cv2.cvtColor(img2, cv2.COLOR_GRAY2BGR)
+
     if type(height) is int:
         aspect_ratio = height / img1.shape[0]
         img1 = cv2.resize(img1, (0, 0), fx=aspect_ratio, fy=aspect_ratio)
@@ -59,6 +65,11 @@ def get_buoy_size(img, draw_result=False, window_title="Center"):
 
     # Since HSV is circular and red is at 0, we need two masks to get all the
     # shades of red that the buoy might be
+    hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+    hsv = cv2.GaussianBlur(hsv, (15, 15), 0)
+
+    # Since HSV is circular and red is at 0, we need two masks to get all the
+    # shades of red that the buoy might be
     RED_ORANGE_MIN = np.array([0, 150, 150])
     RED_ORANGE_MAX = np.array([15, 255, 255])
     PURPLE_RED_MIN = np.array([160, 100, 100])
@@ -100,12 +111,20 @@ def get_buoy_size(img, draw_result=False, window_title="Center"):
 
         # Resize and display the images
         # imshow_split(img, draw_cnts, title=window_title, height=200)
-        aspect_ratio = 200 / draw_cnts.shape[0]
-        draw_cnts = cv2.resize(draw_cnts, (0, 0), fx=aspect_ratio, fy=aspect_ratio)
-        cv2.imshow(window_title, draw_cnts)
+        # aspect_ratio = 200 / draw_cnts.shape[0]
+        # draw_cnts = cv2.resize(draw_cnts, (0, 0), fx=aspect_ratio, fy=aspect_ratio)
+        # cv2.imshow(window_title, draw_cnts)
         cv2.waitKey(0)
 
     return (cX, cY), w
+
+def thresh_detect(img):
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    print(gray.shape, img.shape)
+    edges = cv2.Canny(img,100,200)
+
+    imshow_split(img, edges, "side", 300)
+    cv2.waitKey(0)
 
 def get_buoy_distance(pixel_width, focal_length):
     # D / W = F / P
