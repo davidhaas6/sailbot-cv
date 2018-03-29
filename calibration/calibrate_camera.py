@@ -15,44 +15,48 @@ objp[:, :2] = np.mgrid[0:7, 0:6].T.reshape(-1, 2)
 objpoints = []  # 3d point in real world space
 imgpoints = []  # 2d points in image plane.
 
-img_dir = '../chess_imgs/'
+img_dir = './calibration/chessboard_imgs/'
 images = glob.glob(img_dir + '*.png') + glob.glob(img_dir + '*.jpg')
-print images
+print(os.listdir(img_dir))
 
-for fname in images:
-    img = cv2.imread(fname)
-    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+for i, fname in enumerate(os.listdir(img_dir)):
+    print(round(float(i)/len(os.listdir(img_dir)) * 100, 2)) # % Completion
 
-    # Find the chess board corners
-    ret, corners = cv2.findChessboardCorners(gray, (7, 6), None)
+    img = cv2.imread(img_dir + fname)
+    if img is not None:
+        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
-    # If found, add object points, image points (after refining them)
-    if ret:
-        objpoints.append(objp)
+        # Find the chess board corners
+        ret, corners = cv2.findChessboardCorners(gray, (7, 6), None)
 
-        cv2.cornerSubPix(gray, corners, (11, 11), (-1, -1), criteria)
-        imgpoints.append(corners)
+        # If found, add object points, image points (after refining them)
+        if ret:
+            objpoints.append(objp)
 
-        # Draw and display the corners
-        cv2.drawChessboardCorners(img, (7, 6), corners, ret)
-        cv2.imshow('img', img)
-        cv2.waitKey(250)
+            corners = cv2.cornerSubPix(gray, corners, (11, 11), (-1, -1), criteria)
+            imgpoints.append(corners)
 
-    else:
-        print 'removed image'
-        os.remove(fname)
-        images.pop(fname)
+            # Draw and display the corners
+            cv2.drawChessboardCorners(img, (7, 6), corners, ret)
+            small = cv2.resize(img, (0,0), fx=0.3, fy=0.3)
+            cv2.imshow('img', small)
+            cv2.waitKey(250)
+
+        else:
+            print('removed image ' + fname)
+            os.remove(img_dir + fname)
+            images.remove(img_dir + fname)
 
 cv2.destroyAllWindows()
 
 et, mtx, dist, rvecs, tvecs = cv2.calibrateCamera(objpoints, imgpoints, gray.shape[::-1], None, None)
 
-with open('../calibration_vals.pkl', 'wb') as f:
+with open('./calibration/calibration_vals.pkl', 'wb') as f:
     pickle.dump([et, mtx, dist, rvecs, tvecs],f)
 
 tot_error = 0
-for i in xrange(len(objpoints)):
+for i in range(len(objpoints)):
     imgpoints2, _ = cv2.projectPoints(objpoints[i], rvecs[i], tvecs[i], mtx, dist)
     error = cv2.norm(imgpoints[i],imgpoints2, cv2.NORM_L2)/len(imgpoints2)
     tot_error += error
-print "mean error: ", tot_error/len(objpoints)
+print("mean error: ", tot_error/len(objpoints))
