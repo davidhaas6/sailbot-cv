@@ -6,6 +6,7 @@ import pickle
 
 # termination criteria
 criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001)
+calibration_flags = cv2.fisheye.CALIB_RECOMPUTE_EXTRINSIC+cv2.fisheye.CALIB_CHECK_COND+cv2.fisheye.CALIB_FIX_SKEW
 
 # prepare object points, like (0,0,0), (1,0,0), (2,0,0) ....,(6,5,0)
 objp = np.zeros((6 * 7, 3), np.float32)
@@ -16,18 +17,18 @@ objpoints = []  # 3d point in real world space
 imgpoints = []  # 2d points in image plane.
 
 img_dir = './calibration/chessboard_imgs/'
-images = glob.glob(img_dir + '*.png') + glob.glob(img_dir + '*.jpg')
-print(os.listdir(img_dir))
+images = os.listdir(img_dir)
+print(len(images), "images")
 
 for i, fname in enumerate(os.listdir(img_dir)):
-    print(round(float(i)/len(os.listdir(img_dir)) * 100, 2)) # % Completion
+    print(round(float(i)/len(images) * 100, 2)) # Percent completion
 
     img = cv2.imread(img_dir + fname)
     if img is not None:
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
         # Find the chess board corners
-        ret, corners = cv2.findChessboardCorners(gray, (7, 6), None)
+        ret, corners = cv2.findChessboardCorners(gray, (7, 6), cv2.CALIB_CB_ADAPTIVE_THRESH+cv2.CALIB_CB_NORMALIZE_IMAGE)
 
         # If found, add object points, image points (after refining them)
         if ret:
@@ -45,11 +46,11 @@ for i, fname in enumerate(os.listdir(img_dir)):
         else:
             print('removed image ' + fname)
             os.remove(img_dir + fname)
-            images.remove(img_dir + fname)
 
 cv2.destroyAllWindows()
 
 et, mtx, dist, rvecs, tvecs = cv2.calibrateCamera(objpoints, imgpoints, gray.shape[::-1], None, None)
+print(et)
 
 with open('./calibration/calibration_vals.pkl', 'wb') as f:
     pickle.dump([et, mtx, dist, rvecs, tvecs],f)

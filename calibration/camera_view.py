@@ -4,12 +4,12 @@ import pickle
 with open('./calibration/calibration_vals.pkl', 'rb') as f:
     et, mtx, dist, rvecs, tvecs = pickle.load(f)
     print (mtx, dist)
+    w, h = (1920, 1080)
+    newcameramtx, roi = cv2.getOptimalNewCameraMatrix(mtx, dist, (w, h), 1, (w, h))
 
 def undistort_img(img):
     h, w = img.shape[:2]
-    print(w,h)
-    newcameramtx, roi = cv2.getOptimalNewCameraMatrix(mtx, dist, (w, h), 1, (w, h))
-    # print(mtx, dist, roi)
+    
     # undistort
     dst = cv2.undistort(img, mtx, dist, None, newcameramtx)
 
@@ -18,7 +18,7 @@ def undistort_img(img):
 
     if w==0:
         print("ERROR: ROI IS 0 - " + str(roi))
-        exit(-1)
+        return dst
     return dst[y:y + h, x:x + w]
 
 cam = cv2.VideoCapture(1)
