@@ -10,7 +10,7 @@ with open('./calibration/calibration_vals.pkl', 'rb') as f:
 def undistort(img):
     return cv2.remap(img, map1, map2, interpolation=cv2.INTER_LINEAR, borderMode=cv2.BORDER_CONSTANT)
 
-path = "./calibration/chessboard_imgs/";
+path = "./calibration/chessboard_imgs_old/";
 imgs = os.listdir(path)
 
 for fname in imgs:
@@ -18,5 +18,5 @@ for fname in imgs:
     if img is not None:
         img = undistort(img)
         small = cv2.resize(img, (0,0), fx=0.6, fy=0.6)
-        cv2.imshow('fname', small)
+        cv2.imshow(fname, small)
         cv2.waitKey(0)
