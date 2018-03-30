@@ -1,6 +1,8 @@
 Reference/
 __pycache__/
-.DS_Store
 calibration/chessboard_imgs/
 calibration/chessboard_imgs_old/
 calibration/sample_imgs/
+
+.DS_Store
+calibration/calibrate_camera.py
