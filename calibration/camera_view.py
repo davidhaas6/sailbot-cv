@@ -1,32 +1,19 @@
 import cv2
 import pickle
 
-with open('./calibration/calibration_vals.pkl', 'rb') as f:
-    et, mtx, dist, rvecs, tvecs = pickle.load(f)
-    print (mtx, dist)
-    w, h = (1920, 1080)
-    newcameramtx, roi = cv2.getOptimalNewCameraMatrix(mtx, dist, (w, h), 1, (w, h))
+# All this to include camera_utils
+from os.path import dirname, abspath
+import sys
+sys.path.insert(0, dirname(dirname(abspath(__file__))))
+from camera_utils import Camera
 
-def undistort_img(img):
-    h, w = img.shape[:2]
-    
-    # undistort
-    dst = cv2.undistort(img, mtx, dist, None, newcameramtx)
-
-    # crop the image
-    x, y, w, h = roi
-
-    if w==0:
-        print("ERROR: ROI IS 0 - " + str(roi))
-        return dst
-    return dst[y:y + h, x:x + w]
-
-cam = cv2.VideoCapture(1)
+video = cv2.VideoCapture(1)
+cam = Camera()
 while True:
-    ret_val, img = cam.read()
+    ret_val, img = video.read()
     if img is not None:
         img = cv2.flip(img, 1)
-        # img = undistort_img(img)
+        # img = cam.undistort(img)
         small = cv2.resize(img, (0,0), fx=0.3, fy=0.3)
         cv2.imshow('my webcam', small)
         if cv2.waitKey(1) == 27:

@@ -2,14 +2,13 @@ import random
 import cv2
 import time
 
-
-cam = cv2.VideoCapture(1)
+video = cv2.VideoCapture(1)
 start = time.time()
 count = 1
 num_imgs = 10
 freq = 1 # Hz
 while True:
-    ret_val, img = cam.read()
+    ret_val, img = video.read()
     small = cv2.resize(img, (0,0), fx=0.3, fy=0.3)
     cv2.imshow('my webcam', small)
     cv2.waitKey(1)
