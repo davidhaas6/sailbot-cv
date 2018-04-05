@@ -44,7 +44,7 @@ def morph_open(mask, d_iters=2, e_iters=2, kernel_size=7):
 
 
 def get_buoy_size(img, draw_result=False, window_title="Center"):
-    """ Computes the center and radius of the buoy in an image.
+    """ Computes the center and width of the buoy in an image.
     The method applies a hsv mask of shades of red to the image, then computes
     the largest contour in that mask which the algorithm assumes to be the buoy.
     The algorithm then computes the center of the contour and the width of its
@@ -126,11 +126,10 @@ def thresh_detect(img):
     imshow_split(img, edges, "side", 300)
     cv2.waitKey(0)
 
-def get_buoy_distance(pixel_width, focal_length):
+def buoy_distance(pixel_width, focal_length):
     # D / W = F / P
     ACTUAL_WIDTH = 0.4
     return focal_length * ACTUAL_WIDTH / pixel_width
 
-def get_buoy_angle(center):
-    #TODO
-    pass
+def angle_from_center(buoy_x, img_width, focal_length):
+    return np.arctan((buoy_x - img_width/2) / focal_length)

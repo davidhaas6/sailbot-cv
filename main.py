@@ -12,11 +12,12 @@ np.random.shuffle(img_dir)
 # img = cv2.imread(data_path + "backg1.jpg")
 # center, width = bcv.get_buoy_size(img, True, "backg")
 
-# cam = Camera()
+cam = Camera(disable_video=True)
 
 for img_path in img_dir:
-
     img = cv2.imread(data_path + img_path)
     # img = cam.undistort(img)
-    center, width = bcv.get_buoy_size(img, True, img_path)
+    center, px_width = bcv.get_buoy_size(img, True, img_path)
+    distance = bcv.buoy_distance(px_width, cam.FOCAL_LEN_X)
+    angle_from_center = bcv.angle_from_center(center[0], cam.DIMENSIONS[0], cam.FOCAL_LEN_X)
     # bcv.thresh_detect(img)
