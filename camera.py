@@ -5,7 +5,7 @@ import numpy as np
 import math
 
 class Camera:
-	def __init__(self, video_channel=1, calibration_path="./calibration/calibration_vals.pkl"):
+	def __init__(self, disable_video=False, video_channel=1, calibration_path="./calibration/calibration_vals.pkl"):
 		# Load the undistortion parameters
 		with open(calibration_path, 'rb') as f:
 			DIMS, camera_matrix, dist = pickle.load(f)
@@ -14,10 +14,11 @@ class Camera:
 		self.DIMENSIONS = DIMS # width and height
 		self.FOCAL_LEN_X = camera_matrix[0][0] # The X focal length
 
-		fov_rad = 2 * math.atan((self.dimensions[0]/(2 * self.f_len_x)))
+		fov_rad = 2 * math.atan((self.DIMENSIONS[0]/(2 * self.FOCAL_LEN_X)))
 		self.FOV = fov_rad * (180/math.pi)
 
-		self.video_capture = cv2.VideoCapture(video_channel)
+		if not disable_video:
+			self.video_capture = cv2.VideoCapture(video_channel)
 
 	def get_frame(self, mirrored=False, undistorted=False):
 		if self.video_capture.isOpened():
@@ -32,7 +33,3 @@ class Camera:
 
 	def undistort(self, img):
 		return cv2.remap(img, self.map1, self.map2, interpolation=cv2.INTER_LINEAR, borderMode=cv2.BORDER_CONSTANT)
-
-	def FOV(self):
-		fov_rad = 2 * math.atan((self.DIMENSIONS[0]/(2 * self.FOCAL_LEN_X)))
-		return fov_rad * (180/math.pi) # Convert to degrees

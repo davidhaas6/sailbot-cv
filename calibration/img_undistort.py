@@ -11,7 +11,7 @@ from camera import Camera
 
 path = "./calibration/chessboard_imgs/";
 imgs = os.listdir(path)
-cam = Camera(enable_video=False)
+cam = Camera(disable_video=True)
 for fname in imgs:
     img = cv2.imread(path + fname)
     if img is not None:
