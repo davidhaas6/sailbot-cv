@@ -14,7 +14,7 @@ class Camera:
 		self.FOCAL_LEN_X = camera_matrix[0][0] # The X focal length
 
 		fov_rad = 2 * np.arctan((self.DIMENSIONS[0]/(2 * self.FOCAL_LEN_X)))
-		self.FOV = fov_rad * (180/math.pi)
+		self.FOV = np.degrees(fov_rad)
 
 		if not disable_video:
 			self.video_capture = cv2.VideoCapture(video_channel)
