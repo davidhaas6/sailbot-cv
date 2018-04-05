@@ -1,21 +1,19 @@
 import cv2
 import pickle
 
-# All this to include camera_utils
+# All this to include camera.py
 from os.path import dirname, abspath
 import sys
 sys.path.insert(0, dirname(dirname(abspath(__file__))))
-from camera_utils import Camera
+from camera import Camera
 
-video = cv2.VideoCapture(1)
-cam = Camera()
+print("Press q to quit")
+cam = Camera(video_channel=1)
 while True:
-    ret_val, img = video.read()
-    if img is not None:
-        img = cv2.flip(img, 1)
-        # img = cam.undistort(img)
-        small = cv2.resize(img, (0,0), fx=0.3, fy=0.3)
+    img = cam.get_frame(mirrored=True, undistorted=True)
+    if img is not False:
+        small = cv2.resize(img, (0,0), fx=0.5, fy=0.5)
         cv2.imshow('my webcam', small)
-        if cv2.waitKey(1) == 27:
+        if cv2.waitKey(1) == ord('q'):
             break  # esc to quit
         cv2.destroyAllWindows()

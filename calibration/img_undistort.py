@@ -3,15 +3,15 @@ import pickle
 import os
 import numpy as np
 
-# All this to include camera_utils
+# All this to include camera.py
 from os.path import dirname, abspath
 import sys
 sys.path.insert(0, dirname(dirname(abspath(__file__))))
-from camera_utils import Camera
+from camera import Camera
 
-path = "./calibration/chessboard_imgs_old/";
+path = "./calibration/chessboard_imgs/";
 imgs = os.listdir(path)
-cam = Camera()
+cam = Camera(enable_video=False)
 for fname in imgs:
     img = cv2.imread(path + fname)
     if img is not None:
