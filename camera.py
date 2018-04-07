@@ -17,6 +17,8 @@ class Camera:
             self.video_capture = cv2.VideoCapture(video_channel)
             _, frame = self.video_capture.read()
             self.DIMENSIONS = frame.shape
+            self.IMG_WIDTH = self.DIMENSIONS[1]
+            self.IMG_HEIGHT = self.DIMENSIONS[0]
         else:
             self.DIMENSIONS = DIMS
 
