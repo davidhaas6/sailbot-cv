@@ -91,8 +91,11 @@ def get_buoy_size(img, draw_result=False, window_title="Center"):
 
     # Computes the center of the contour
     M = cv2.moments(cnt)
-    cX = int(M["m10"] / M["m00"])
-    cY = int(M["m01"] / M["m00"])
+    if M["m00"] != 0:
+        cX = int(M["m10"] / M["m00"])
+        cY = int(M["m01"] / M["m00"])
+    else:
+        return None, None
 
     # Gets the bounding rect
     x,y,w,h = cv2.boundingRect(cnt)
@@ -126,10 +129,31 @@ def thresh_detect(img):
     imshow_split(img, edges, "side", 300)
     cv2.waitKey(0)
 
-def buoy_distance(pixel_width, focal_length):
-    # D / W = F / P
-    ACTUAL_WIDTH = 0.4
+def buoy_distance(pixel_width, focal_length, ACTUAL_WIDTH=0.4):
+    """ Calculates the distance of the buoy from the boat.
+    The algorithm uses the similar triangles in the following equation:
+    (focal_len / pixel_width) = (actual_distance / actual_width)
+
+    Keyword arguments:
+    pixel_width -- The width of the buoy in pixels
+    focal_length -- The focal length of the camera in pixels
+    ACTUAL_WIDTH -- The actual width of the buoy in desired units (default 0.4m)
+
+    Returns:
+    distance -- The distance of the buoy in the units of the ACTUAL_WIDTH
+    """
     return focal_length * ACTUAL_WIDTH / pixel_width
 
 def angle_from_center(buoy_x, img_width, focal_length):
-    return np.arctan((buoy_x - img_width/2) / focal_length)
+    """ Calculates the angle of the buoy from the center of the image.
+    Uses trig 
+
+    Keyword arguments:
+    buoy_x - The x coordinate of the center of the buoy
+    img_width -- The total width of the image
+    focal_length -- The focal length of the camera in pixels
+
+    Returns:
+    Offset angle -- The angle offset from the center of the image in degrees
+    """
+    return np.degrees(np.arctan((buoy_x - img_width/2) / focal_length))
