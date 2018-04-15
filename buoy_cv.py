@@ -65,11 +65,6 @@ def get_buoy_size(img, draw_result=False, window_title="Center"):
 
     # Since HSV is circular and red is at 0, we need two masks to get all the
     # shades of red that the buoy might be
-    hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
-    hsv = cv2.GaussianBlur(hsv, (15, 15), 0)
-
-    # Since HSV is circular and red is at 0, we need two masks to get all the
-    # shades of red that the buoy might be
     RED_ORANGE_MIN = np.array([0, 150, 150])
     RED_ORANGE_MAX = np.array([15, 255, 255])
     PURPLE_RED_MIN = np.array([160, 100, 100])
@@ -146,7 +141,7 @@ def buoy_distance(pixel_width, focal_length, ACTUAL_WIDTH=0.4):
 
 def angle_from_center(buoy_x, img_width, focal_length):
     """ Calculates the angle of the buoy from the center of the image.
-    Uses trig 
+    Uses trig
 
     Keyword arguments:
     buoy_x - The x coordinate of the center of the buoy
