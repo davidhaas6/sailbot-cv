@@ -3,7 +3,7 @@ import os
 import numpy as np
 
 
-def imshow_split(img1, img2, title, height=False):
+def imshow_split(img1, img2, title="Split Image", height=False):
     """ Shows two images side-by-side in an imshow window.
 
     Keyword arguments:
@@ -40,10 +40,26 @@ def morph_open(mask, d_iters=2, e_iters=2, kernel_size=7):
     kernel = np.ones((kernel_size, kernel_size), np.uint8)
 
     img_erosion = cv2.erode(mask, kernel, iterations=e_iters)
-    return cv2.dilate(mask, kernel, iterations=d_iters)
+    return cv2.dilate(img_erosion, kernel, iterations=d_iters)
 
 
-def get_buoy_size(img, draw_result=False, window_title="Center"):
+    def color_isolate(img):
+        lab = cv2.cvtColor(img, cv2.COLOR_BGR2Lab)
+        lab = cv2.GaussianBlur(lab,(15,15),0)
+
+        no_lb = lab.copy()
+        no_lb[:,:,0] = 0
+        no_lb[:,:,2] = 0
+
+        # gray_lb = cv2.cvtColor(no_lb, cv2.COLOR_LAB2BGR)
+        gray_lb = cv2.cvtColor(no_lb, cv2.COLOR_BGR2GRAY)
+
+        ret, thresh = cv2.threshold(gray_lb,0,255,cv2.THRESH_BINARY+cv2.THRESH_OTSU)
+        morphed = morph_open(thresh)
+        imshow_split(gray_lb, thresh,height=200)
+        cv2.waitKey(0)
+
+def get_buoy_size(img, draw_result=False, window_title="Buoy"):
     """ Computes the center and width of the buoy in an image.
     The method applies a hsv mask of shades of red to the image, then computes
     the largest contour in that mask which the algorithm assumes to be the buoy.
@@ -76,11 +92,19 @@ def get_buoy_size(img, draw_result=False, window_title="Center"):
     mask = orange_red_mask + purpe_red_mask
 
     # Sets d_iters to 3 to help connect blobs
-    opened_mask = morph_open(mask, d_iters=3)
+    kernel = np.ones((7, 7), np.uint8)
+    opened_mask = cv2.dilate(mask, kernel, iterations=3)
 
     # Finds the largest contour
     _, cnts, _ = cv2.findContours(opened_mask.copy(), cv2.RETR_TREE,
                                   cv2.CHAIN_APPROX_SIMPLE)
+    if len(cnts) == 0:
+        print('No contours found!')
+        if draw_result:
+            imshow_split(opened_mask, img, title=window_title, height=200)
+            cv2.waitKey(0)
+        return None, None
+
     cnt = max(cnts, key=cv2.contourArea)
     cnt = cv2.convexHull(cnt)
 
@@ -90,10 +114,28 @@ def get_buoy_size(img, draw_result=False, window_title="Center"):
         cX = int(M["m10"] / M["m00"])
         cY = int(M["m01"] / M["m00"])
     else:
+        print('No moments found!')
+        if draw_result:
+            imshow_split(opened_mask, img, title=window_title, height=200)
+            cv2.waitKey(0)
         return None, None
 
+    (x, y), radius = cv2.minEnclosingCircle(cnt)
+
+    predicted_cicrum = np.pi * radius * 2
+    actual_circum = cv2.arcLength(cnt,True)
+
+    predicted_area = np.pi * radius**2
+    actual_area = cv2.contourArea(cnt)
+
+    circularity = actual_circum / predicted_cicrum
+
+    print('Area ratio:',(actual_area/predicted_area))
+    print('Circum ratio:', circularity)
+    print()
+
     # Gets the bounding rect
-    x,y,w,h = cv2.boundingRect(cnt)
+    _,_,w,h = cv2.boundingRect(cnt)
 
     if draw_result:
         draw_cnts = img.copy()
@@ -104,11 +146,11 @@ def get_buoy_size(img, draw_result=False, window_title="Center"):
         cv2.putText(draw_cnts, "center", (cX - 20, cY - 20),
                     cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
 
-
+        cv2.circle(draw_cnts,(int(x),int(y)),int(radius), (0,0,255),2)
         # cv2.rectangle(draw_cnts,(x,y),(x+w,y+h),(0,0,255),3)
 
         # Resize and display the images
-        # imshow_split(img, draw_cnts, title=window_title, height=200)
+        imshow_split(img, draw_cnts, title=window_title, height=200)
         # aspect_ratio = 200 / draw_cnts.shape[0]
         # draw_cnts = cv2.resize(draw_cnts, (0, 0), fx=aspect_ratio, fy=aspect_ratio)
         # cv2.imshow(window_title, draw_cnts)
