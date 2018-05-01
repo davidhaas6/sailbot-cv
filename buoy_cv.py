@@ -59,7 +59,7 @@ def morph_open(mask, d_iters=2, e_iters=2, kernel_size=7):
         imshow_split(gray_lb, thresh,height=200)
         cv2.waitKey(0)
 
-def get_buoy_size(img, draw_result=False, window_title="Buoy"):
+def find_buoy(img, draw_result=False, window_title="Buoy"):
     """ Computes the center and width of the buoy in an image.
     The method applies a hsv mask of shades of red to the image, then computes
     the largest contour in that mask which the algorithm assumes to be the buoy.
