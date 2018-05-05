@@ -59,7 +59,7 @@ def morph_open(mask, d_iters=2, e_iters=2, kernel_size=7):
         imshow_split(gray_lb, thresh,height=200)
         cv2.waitKey(0)
 
-def find_buoy(img, draw_result=False, window_title="Buoy"):
+def find_buoy(img, draw_result=False, window_title="Buoy", circ_thresh=0.83):
     """ Computes the center and width of the buoy in an image.
     The method applies a hsv mask of shades of red to the image, then computes
     the largest contour in that mask which the algorithm assumes to be the buoy.
@@ -70,6 +70,8 @@ def find_buoy(img, draw_result=False, window_title="Buoy"):
     img -- An image containing a buoy
     draw_result -- Whether or not to display the contours and center (default False)
     window_title -- The title of the resulting window (default "Center")
+    circ_thresh -- The threshold for the ratio between the contour's circum and
+                   it's prediected circum (default 0.83)
 
     Returns:
     center -- A tuple containing the x and y coords of the center of the buoy
@@ -106,6 +108,7 @@ def find_buoy(img, draw_result=False, window_title="Buoy"):
         return None, None
 
     cnt = max(cnts, key=cv2.contourArea)
+    # TODO: BETTER SORTING
     cnt = cv2.convexHull(cnt)
 
     # Computes the center of the contour
@@ -122,17 +125,17 @@ def find_buoy(img, draw_result=False, window_title="Buoy"):
 
     (x, y), radius = cv2.minEnclosingCircle(cnt)
 
+    # predicted_area = np.pi * radius**2
+    # actual_area = cv2.contourArea(cnt)
+    # print('Area ratio:',(actual_area/predicted_area))
+
     predicted_cicrum = np.pi * radius * 2
     actual_circum = cv2.arcLength(cnt,True)
-
-    predicted_area = np.pi * radius**2
-    actual_area = cv2.contourArea(cnt)
-
     circularity = actual_circum / predicted_cicrum
-
-    print('Area ratio:',(actual_area/predicted_area))
-    print('Circum ratio:', circularity)
-    print()
+    #print('Circum ratio:', circularity)
+    #print()
+    if circularity < circularity_thresh:
+        return None, None
 
     # Gets the bounding rect
     _,_,w,h = cv2.boundingRect(cnt)
@@ -156,7 +159,7 @@ def find_buoy(img, draw_result=False, window_title="Buoy"):
         # cv2.imshow(window_title, draw_cnts)
         cv2.waitKey(0)
 
-    return (cX, cY), w
+    return (cX, cY), cv2.minAreaRect(cnt)
 
 def thresh_detect(img):
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
