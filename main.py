@@ -5,7 +5,7 @@ from camera import Camera
 import os
 
 # Grabs and shuffles the images
-data_path = "./datad/"
+data_path = "./data/"
 img_dir = os.listdir(data_path)
 img_dir = [im for im in img_dir if '.png' in im or '.jpg' in im]
 #np.random.shuffle(img_dir)
@@ -24,4 +24,4 @@ for img_path in img_dir:
     #     angle_from_center = bcv.angle_from_center(center[0], cam.DIMENSIONS[0], cam.FOCAL_LEN_X)
 
     #bcv.color_isolate(img)
-    bcv.get_buoy_size(img, draw_result=True)
+    bcv.find_buoy(img, draw_result=True)
